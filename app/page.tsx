@@ -22,10 +22,10 @@ const questions: Question[] = [
     question:
       "¿Qué bloque de evento debes usar para que un personaje comience a moverse cuando el usuario presiona la tecla de espacio en el teclado?",
     options: [
-      "al hacer clic en este objeto",
-      "al presionar la tecla espacio",
-      "al recibir [mensaje1]",
-      "al comenzar como clon",
+      "Al hacer clic en este objeto",
+      "Al presionar la tecla espacio",
+      "Al recibir [mensaje1]",
+      "Al comenzar como clon",
     ],
     correctAnswer: 1,
   },
