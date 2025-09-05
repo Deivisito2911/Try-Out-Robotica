@@ -16,6 +16,16 @@ interface Question {
   correctAnswer: number
 }
 
+interface QuizResult {
+  id: string
+  studentInfo: StudentInfo
+  respuestas: number[]
+  calificacion: number
+  total_preguntas: number
+  porcentaje: number
+  fecha: string
+}
+
 const questions: Question[] = [
   {
     id: 1,
@@ -112,7 +122,7 @@ const questions: Question[] = [
 ]
 
 export default function RoboticsQuiz() {
-  const [step, setStep] = useState<"info" | "quiz" | "results">("info")
+  const [step, setStep] = useState<"info" | "quiz" | "results" | "admin-login" | "admin-panel">("info")
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
     nombre: "",
     apellido: "",
@@ -121,6 +131,11 @@ export default function RoboticsQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
   const [selectedAnswer, setSelectedAnswer] = useState<string>("")
+
+  const [adminCredentials, setAdminCredentials] = useState({ usuario: "", clave: "" })
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([])
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc")
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     if (step === "results") {
@@ -131,6 +146,74 @@ export default function RoboticsQuiz() {
       return () => clearTimeout(timer)
     }
   }, [step])
+
+  useEffect(() => {
+    const savedResults = localStorage.getItem("robotics-quiz-results")
+    if (savedResults) {
+      try {
+        setQuizResults(JSON.parse(savedResults))
+      } catch (error) {
+        console.error("Error loading saved results:", error)
+      }
+    }
+  }, [])
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (adminCredentials.usuario === "Administrador" && adminCredentials.clave === "RoboticaMapis") {
+      setIsAuthenticated(true)
+      setStep("admin-panel")
+      loadQuizResults()
+    } else {
+      alert("Credenciales incorrectas")
+      setAdminCredentials({ usuario: "", clave: "" })
+    }
+  }
+
+  const loadQuizResults = () => {
+    const savedResults = localStorage.getItem("robotics-quiz-results")
+    if (savedResults) {
+      try {
+        const results = JSON.parse(savedResults)
+        const sorted = results.sort((a: QuizResult, b: QuizResult) => {
+          return sortOrder === "desc" ? b.calificacion - a.calificacion : a.calificacion - b.calificacion
+        })
+        setQuizResults(sorted)
+      } catch (error) {
+        console.error("Error loading results:", error)
+        setQuizResults([])
+      }
+    } else {
+      setQuizResults([])
+    }
+  }
+
+  const sortResults = () => {
+    const newOrder = sortOrder === "desc" ? "asc" : "desc"
+    setSortOrder(newOrder)
+
+    const sorted = [...quizResults].sort((a, b) => {
+      if (newOrder === "desc") {
+        return b.calificacion - a.calificacion
+      } else {
+        return a.calificacion - b.calificacion
+      }
+    })
+
+    setQuizResults(sorted)
+  }
+
+  const goToAdminLogin = () => {
+    setIsAuthenticated(false)
+    setAdminCredentials({ usuario: "", clave: "" })
+    setStep("admin-login")
+  }
+
+  const returnToQuiz = () => {
+    setIsAuthenticated(false)
+    setAdminCredentials({ usuario: "", clave: "" })
+    setStep("info")
+  }
 
   const handleStudentInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,14 +231,39 @@ export default function RoboticsQuiz() {
         setCurrentQuestion(currentQuestion + 1)
         setSelectedAnswer("")
       } else {
-        // Show confirmation dialog before finishing
         const confirmed = window.confirm(
           "¿Seguro que deseas enviar el formulario con estas respuestas?\n\nUna vez enviado no podrás modificar tus respuestas.",
         )
         if (confirmed) {
+          const finalAnswers = newAnswers
+          const score = calculateScoreFromAnswers(finalAnswers)
+          const percentage = Math.round((score / questions.length) * 100)
+
+          const newResult: QuizResult = {
+            id: Date.now().toString(),
+            studentInfo: { ...studentInfo },
+            respuestas: finalAnswers,
+            calificacion: score,
+            total_preguntas: questions.length,
+            porcentaje: percentage,
+            fecha: new Date().toISOString(),
+          }
+
+          const savedResults = localStorage.getItem("robotics-quiz-results")
+          let results: QuizResult[] = []
+          if (savedResults) {
+            try {
+              results = JSON.parse(savedResults)
+            } catch (error) {
+              console.error("Error parsing saved results:", error)
+            }
+          }
+
+          results.push(newResult)
+          localStorage.setItem("robotics-quiz-results", JSON.stringify(results))
+
           setStep("results")
         } else {
-          // If not confirmed, don't add the answer and stay on current question
           setAnswers(answers)
         }
       }
@@ -165,9 +273,7 @@ export default function RoboticsQuiz() {
   const goToPreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1)
-      // Restore the previous answer
       setSelectedAnswer(answers[currentQuestion - 1]?.toString() || "")
-      // Remove the last answer from the array
       setAnswers(answers.slice(0, -1))
     }
   }
@@ -180,14 +286,18 @@ export default function RoboticsQuiz() {
     setSelectedAnswer("")
   }
 
-  const calculateScore = () => {
+  const calculateScoreFromAnswers = (answersArray: number[]) => {
     let correct = 0
-    answers.forEach((answer, index) => {
+    answersArray.forEach((answer, index) => {
       if (answer === questions[index].correctAnswer) {
         correct++
       }
     })
     return correct
+  }
+
+  const calculateScore = () => {
+    return calculateScoreFromAnswers(answers)
   }
 
   const generatePDF = () => {
@@ -229,7 +339,6 @@ export default function RoboticsQuiz() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <header className="bg-blue-900 text-white py-6 px-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -247,18 +356,157 @@ export default function RoboticsQuiz() {
               }}
             />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">Unidad Educativa Mariano Picon Salas</h1>
             <p className="text-blue-100">Try Out de Robótica</p>
           </div>
+          {step !== "admin-login" && step !== "admin-panel" && (
+            <button
+              onClick={goToAdminLogin}
+              className="bg-yellow-500 text-blue-900 px-4 py-2 rounded-md hover:bg-yellow-400 transition-colors font-semibold text-sm"
+            >
+              Acceso Admin
+            </button>
+          )}
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 py-8">
-        {step === "info" && (
+      <main className="max-w-6xl mx-auto p-4 py-8">
+        {step === "admin-login" && (
           <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
             <div className="text-center mb-6">
               <div className="mx-auto mb-4 w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                <span className="text-blue-900 font-bold text-xl">🔐</span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Administrativo</h2>
+              <p className="text-gray-600">Ingresa las credenciales para consultar calificaciones</p>
+            </div>
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="usuario" className="block text-sm font-medium text-gray-700">
+                  Usuario
+                </label>
+                <input
+                  id="usuario"
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  value={adminCredentials.usuario}
+                  onChange={(e) => setAdminCredentials({ ...adminCredentials, usuario: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="clave" className="block text-sm font-medium text-gray-700">
+                  Clave
+                </label>
+                <input
+                  id="clave"
+                  type="password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  value={adminCredentials.clave}
+                  onChange={(e) => setAdminCredentials({ ...adminCredentials, clave: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-3">
+                <button
+                  type="submit"
+                  className="w-full bg-blue-900 text-white py-2 px-4 rounded-md hover:bg-blue-800 transition-colors"
+                >
+                  Ingresar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep("info")}
+                  className="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  Volver al Quiz
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {step === "admin-panel" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Panel Administrativo</h2>
+                  <p className="text-gray-600">Consulta de Calificaciones - Try Out de Robótica</p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={sortResults}
+                    className="bg-yellow-500 text-blue-900 px-4 py-2 rounded-md hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2"
+                  >
+                    Ordenar {sortOrder === "desc" ? "↓" : "↑"}
+                  </button>
+                  <button
+                    onClick={returnToQuiz}
+                    className="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition-colors"
+                  >
+                    Volver al Quiz
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-blue-900 text-white">
+                      <th className="border border-gray-300 px-4 py-3 text-left">#</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left">Nombre</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left">Apellido</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left">Grado</th>
+                      <th className="border border-gray-300 px-4 py-3 text-center">Calificación</th>
+                      <th className="border border-gray-300 px-4 py-3 text-center">Porcentaje</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quizResults.map((result, index) => (
+                      <tr key={result.id} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                        <td className="border border-gray-300 px-4 py-3">{index + 1}</td>
+                        <td className="border border-gray-300 px-4 py-3">{result.studentInfo.nombre}</td>
+                        <td className="border border-gray-300 px-4 py-3">{result.studentInfo.apellido}</td>
+                        <td className="border border-gray-300 px-4 py-3">{result.studentInfo.grado}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-center font-semibold">
+                          {result.calificacion}/{result.total_preguntas}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          <span
+                            className={`px-2 py-1 rounded-full text-sm font-medium ${
+                              result.porcentaje >= 70
+                                ? "bg-green-100 text-green-800"
+                                : result.porcentaje >= 50
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {result.porcentaje}%
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3">
+                          {new Date(result.fecha).toLocaleDateString("es-ES")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {quizResults.length === 0 && (
+                <div className="text-center py-8 text-gray-500">No hay resultados disponibles</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {step === "info" && (
+          <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto mb-4 w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-blue-900 font-bold text-xl">INFO</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Información del Estudiante</h2>
