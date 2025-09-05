@@ -249,7 +249,7 @@ export default function RoboticsQuiz() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Unidad Educativa Mariano Picon Salas</h1>
-            <p className="text-blue-100">Try Out de Robótica</p>
+            <p className="text-blue-100">Try Out de Robótica Periodo 2025-2026</p>
           </div>
         </div>
       </header>
