@@ -74,7 +74,7 @@ const questions: Question[] = [
   {
     id: 7,
     question:
-      "Si quieres que un robot o un personaje se detenga por un momento hasta que pase algo antes de seguir moviéndose, ¿qué bloque es el más adecuado?",
+      "Si quieres que un robot o un personaje se detenga por un momento antes de seguir moviéndose, ¿qué bloque es el más adecuado?",
     options: ["esperar hasta que...", "esperar 1 segundos", "detener todos", "ir a x: 0 y: 0"],
     correctAnswer: 1,
   },
