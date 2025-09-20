@@ -31,14 +31,14 @@ const questions: Question[] = [
   },
   {
     id: 2,
-    question: "Si quieres que tu personaje se desplace 10 pasos a la derecha, ¿qué bloque usarías?",
-    options: ["cambiar x por 10", "ir a x: 10 y: 0", "mover 10 pasos", "ir a posición aleatoria"],
-    correctAnswer: 2,
+    question: "¿Qué es un Sprite en programación visual como Scratch?",
+    options: ["Es un bloque que nos permite hacer animaciones", "Es el personaje al cual le damos la programación que ejecutara", "Un personaje que solamente podemos pintar", "Todas las anteriores"],
+    correctAnswer: 1,
   },
   {
     id: 3,
     question: "¿Qué bloque de control usarías para que tu personaje repita una secuencia de movimientos 5 veces?",
-    options: ["por siempre", "repetir 5", "si...entonces", "esperar 1 segundos"],
+    options: ["por siempre", "repetir 5", "si...entonces", "esperar 5 veces"],
     correctAnswer: 1,
   },
   {
@@ -62,33 +62,33 @@ const questions: Question[] = [
   {
     id: 6,
     question:
-      "Para que un personaje cambie de color cuando es tocado por otro objeto, ¿qué bloque de apariencia usarías?",
+      "Nos permite detectar objetos en nuestro entorno y reaccionar a ellos",
     options: [
-      "cambiar tamaño por 10",
-      "dar al efecto [color] el valor de 25",
-      "cambiar efecto [color] por 25",
-      "ir a capa delantera",
+      "Sensor de color",
+      "Sensor ultrasónico",
+      "Sensor pulsador",
+      "Todas las anteriores",
     ],
-    correctAnswer: 2,
+    correctAnswer: 3,
   },
   {
     id: 7,
     question:
-      "Si quieres que un robot o un personaje se detenga por un momento antes de seguir moviéndose, ¿qué bloque es el más adecuado?",
+      "Si quieres que un robot o un personaje se detenga por un momento hasta que pase algo antes de seguir moviéndose, ¿qué bloque es el más adecuado?",
     options: ["esperar hasta que...", "esperar 1 segundos", "detener todos", "ir a x: 0 y: 0"],
     correctAnswer: 1,
   },
   {
     id: 8,
     question:
-      "Un videojuego necesita un bloque que detecte si el personaje está tocando el borde de la pantalla. ¿Qué bloque usarías dentro de una condición?",
+      "Son necesarios para que un robot pueda funcionar correctamente y responder a su entorno",
     options: [
-      "tecla [espacio] presionada?",
-      "¿tocando color [ ]?",
-      "¿tocando borde?",
-      "¿distancia a [puntero del ratón]?",
+      "Tarjeta programable, baterias, motores",
+      "Programación, sensores, actuadores",
+      "Ruedas, estructura, cables",
+      "Todas las anteriores",
     ],
-    correctAnswer: 2,
+    correctAnswer: 3,
   },
   {
     id: 9,
@@ -100,12 +100,12 @@ const questions: Question[] = [
   {
     id: 10,
     question:
-      "Si tu personaje está en una posición aleatoria y quieres que apunte hacia el puntero del ratón, ¿qué bloque de movimiento usarías?",
+      "¿Qué es la robótica?",
     options: [
-      "apuntar en dirección 90",
-      "apuntar hacia [puntero del ratón]",
-      "girar 15 grados",
-      "deslizar en 1 seg a x: 0 y: 0",
+      "La rama de la ciencia que solo se encarga de la programación de computadoras.",
+      "La integración de varias ramas de la ingeniería para crear máquinas que realizan tareas de forma automática.",
+      "El campo que solo estudia el uso de herramientas y máquinas para realizar tareas sencillas.",
+      "El estudio de cómo construir robots que se ven y actúan como humanos.",
     ],
     correctAnswer: 1,
   },
