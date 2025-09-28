@@ -20,7 +20,7 @@ const questions: Question[] = [
   {
     id: 1,
     question:
-      "¿Qué bloque de evento debes usar para que un personaje comience a moverse cuando el usuario presiona la tecla de espacio en el teclado?",
+      "¿Qué Alejandro mrc bloque de evento debes usar para que un personaje comience a moverse cuando el usuario presiona la tecla de espacio en el teclado?",
     options: [
       "Al hacer clic en este objeto",
       "Al presionar la tecla espacio",
