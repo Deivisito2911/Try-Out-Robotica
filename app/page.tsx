@@ -1,67 +1,19 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Cpu, Lightbulb, RotateCcw, Send, Sparkles, Trophy, Users } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, ChevronRight, Cpu, Lightbulb, Loader2, RotateCcw, Send, Sparkles, Trophy, Users } from "lucide-react"
 
-interface StudentInfo {
-  nombre: string
-  apellido: string
-  grado: string
-}
-
-interface Question {
-  id: number
-  category: "Soft skills" | "Lógica" | "Mecánica"
-  question: string
-  options: string[]
-  correctAnswer: number
-}
+interface StudentInfo { nombre: string; apellido: string; grado: string }
+interface Question { id: number; category: "Soft skills" | "Lógica" | "Mecánica"; question: string; options: string[]; correctAnswer: number }
 
 const questions: Question[] = [
-  {
-    id: 1,
-    category: "Soft skills",
-    question: "Tu equipo no está de acuerdo sobre cómo resolver un reto. ¿Qué harías primero?",
-    options: ["Escuchar las ideas de todos y buscar una solución juntos", "Elegir mi idea sin discutir", "Dejar que otra persona decida", "Abandonar el reto"],
-    correctAnswer: 0,
-  },
-  {
-    id: 2,
-    category: "Lógica",
-    question: "Un robot avanza 3 pasos y luego retrocede 1. Si repite la secuencia 4 veces, ¿cuántos pasos avanza en total?",
-    options: ["4 pasos", "8 pasos", "12 pasos", "16 pasos"],
-    correctAnswer: 1,
-  },
-  {
-    id: 3,
-    category: "Mecánica",
-    question: "¿Qué componente permite que un robot detecte la distancia hasta un objeto?",
-    options: ["Motor", "Batería", "Sensor ultrasónico", "Rueda"],
-    correctAnswer: 2,
-  },
-  {
-    id: 4,
-    category: "Lógica",
-    question: "¿Qué estructura usarías para repetir una instrucción varias veces?",
-    options: ["Un ciclo", "Un comentario", "Una variable de texto", "Un cable"],
-    correctAnswer: 0,
-  },
-  {
-    id: 5,
-    category: "Mecánica",
-    question: "¿Cuál es una función principal de los motores en un robot?",
-    options: ["Guardar el programa", "Producir movimiento", "Medir la luz", "Mostrar mensajes"],
-    correctAnswer: 1,
-  },
-  {
-    id: 6,
-    category: "Soft skills",
-    question: "Cuando tu prototipo falla durante una prueba, ¿cuál es la mejor actitud?",
-    options: ["Analizar lo ocurrido, aprender y volver a intentarlo", "Ocultar el error", "Culpar a alguien del equipo", "No volver a probarlo"],
-    correctAnswer: 0,
-  },
+  { id: 1, category: "Soft skills", question: "Tu equipo no está de acuerdo sobre cómo resolver un reto. ¿Qué harías primero?", options: ["Escuchar las ideas de todos y buscar una solución juntos", "Elegir mi idea sin discutir", "Dejar que otra persona decida", "Abandonar el reto"], correctAnswer: 0 },
+  { id: 2, category: "Lógica", question: "Un robot avanza 3 pasos y luego retrocede 1. Si repite la secuencia 4 veces, ¿cuántos pasos avanza en total?", options: ["4 pasos", "8 pasos", "12 pasos", "16 pasos"], correctAnswer: 1 },
+  { id: 3, category: "Mecánica", question: "¿Qué componente permite que un robot detecte la distancia hasta un objeto?", options: ["Motor", "Batería", "Sensor ultrasónico", "Rueda"], correctAnswer: 2 },
+  { id: 4, category: "Lógica", question: "¿Qué estructura usarías para repetir una instrucción varias veces?", options: ["Un ciclo", "Un comentario", "Una variable de texto", "Un cable"], correctAnswer: 0 },
+  { id: 5, category: "Mecánica", question: "¿Cuál es una función principal de los motores en un robot?", options: ["Guardar el programa", "Producir movimiento", "Medir la luz", "Mostrar mensajes"], correctAnswer: 1 },
+  { id: 6, category: "Soft skills", question: "Cuando tu prototipo falla durante una prueba, ¿cuál es la mejor actitud?", options: ["Analizar lo ocurrido, aprender y volver a intentarlo", "Ocultar el error", "Culpar a alguien del equipo", "No volver a probarlo"], correctAnswer: 0 },
 ]
-
 const gradeOptions = ["1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado", "1er Año", "2do Año", "3er Año", "4to Año", "5to Año"]
 
 export default function RoboticsQuiz() {
@@ -70,177 +22,35 @@ export default function RoboticsQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
-
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState("")
   const score = useMemo(() => answers.reduce((total, answer, index) => total + (answer === questions[index]?.correctAnswer ? 1 : 0), 0), [answers])
   const percentage = Math.round((score / questions.length) * 100)
   const current = questions[currentQuestion]
   const isLastQuestion = currentQuestion === questions.length - 1
 
-  function handleStudentInfoSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setStep("quiz")
-  }
-
+  function handleStudentInfoSubmit(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); setStep("quiz") }
   function handleNext() {
     if (selectedAnswer === null) return
-    const updatedAnswers = [...answers]
-    updatedAnswers[currentQuestion] = selectedAnswer
-    setAnswers(updatedAnswers)
-
-    if (isLastQuestion) {
-      setStep("results")
-      return
-    }
-
-    setCurrentQuestion((question) => question + 1)
-    setSelectedAnswer(updatedAnswers[currentQuestion + 1] ?? null)
+    const updatedAnswers = [...answers]; updatedAnswers[currentQuestion] = selectedAnswer; setAnswers(updatedAnswers)
+    if (isLastQuestion) { setStep("results"); return }
+    setCurrentQuestion((question) => question + 1); setSelectedAnswer(updatedAnswers[currentQuestion + 1] ?? null)
+  }
+  function handlePrevious() { if (currentQuestion === 0) return; setCurrentQuestion((question) => question - 1); setSelectedAnswer(answers[currentQuestion - 1] ?? null) }
+  function restartQuiz() { setStep("info"); setStudentInfo({ nombre: "", apellido: "", grado: "" }); setCurrentQuestion(0); setAnswers([]); setSelectedAnswer(null); setSaved(false); setSaveError("") }
+  async function handleSubmitToSupabase() {
+    setSaving(true); setSaveError("")
+    try {
+      const response = await fetch("/api/resultados", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...studentInfo, respuestas: answers, puntaje_total: score }) })
+      if (!response.ok) throw new Error("No se pudo guardar el resultado")
+      setSaved(true)
+    } catch { setSaveError("No pudimos guardar tu resultado. Intenta nuevamente.") } finally { setSaving(false) }
   }
 
-  function handlePrevious() {
-    if (currentQuestion === 0) return
-    setCurrentQuestion((question) => question - 1)
-    setSelectedAnswer(answers[currentQuestion - 1] ?? null)
-  }
-
-  function restartQuiz() {
-    setStep("info")
-    setStudentInfo({ nombre: "", apellido: "", grado: "" })
-    setCurrentQuestion(0)
-    setAnswers([])
-    setSelectedAnswer(null)
-  }
-
-  function handleSubmitToSupabase() {
-    const result = {
-      nombre: studentInfo.nombre,
-      apellido: studentInfo.apellido,
-      grado: studentInfo.grado,
-      respuestas: answers,
-      puntaje_total: score,
-    }
-
-    // Coloca aquí la función de Supabase para enviar el resultado:
-    // await supabase.from("resultados_tryout").insert(result)
-    void result
-  }
-
-  return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <header className="border-b border-border/70 bg-card/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-              <Cpu className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="font-mono text-xs font-semibold uppercase tracking-[0.24em] text-primary">RoboLab</p>
-              <p className="text-sm font-medium text-muted-foreground">Try-Out de Robótica</p>
-            </div>
-          </div>
-          <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
-            <Sparkles className="size-4 text-accent" aria-hidden="true" />
-            Aprende. Construye. Comparte.
-          </div>
-        </div>
-      </header>
-
-      <section className="relative mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:px-8 lg:py-16">
-        <div className="max-w-xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-foreground">
-            <Lightbulb className="size-4 text-accent" aria-hidden="true" />
-            Desafío STEM para estudiantes
-          </div>
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl">
-            Tu próxima misión empieza aquí.
-          </h1>
-          <p className="mt-5 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
-            Demuestra tu curiosidad, tu lógica y tus ganas de crear. Completa este reto para formar parte del equipo de robótica.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-5 text-sm text-muted-foreground">
-            <span className="flex items-center gap-2"><Cpu className="size-4 text-primary" aria-hidden="true" /> 6 preguntas</span>
-            <span className="flex items-center gap-2"><Users className="size-4 text-primary" aria-hidden="true" /> Para estudiantes</span>
-          </div>
-        </div>
-
-        <div className="relative">
-          <div className="absolute -inset-5 -z-10 rounded-[2rem] bg-accent/10 blur-2xl" />
-          {step === "info" && (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="student-info-title">
-              <div className="mb-7 flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Misión 01</p>
-                  <h2 id="student-info-title" className="mt-2 text-2xl font-bold text-primary">Conozcamos al piloto</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Completa tus datos para desbloquear el cuestionario.</p>
-                </div>
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-primary"><Users className="size-5" aria-hidden="true" /></div>
-              </div>
-              <form onSubmit={handleStudentInfoSubmit} className="flex flex-col gap-5">
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="flex flex-col gap-2 text-sm font-semibold text-foreground" htmlFor="nombre">Nombre
-                    <input id="nombre" required value={studentInfo.nombre} onChange={(event) => setStudentInfo({ ...studentInfo, nombre: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none transition focus:border-primary focus:ring-4 focus:ring-ring/20" placeholder="Ej. Valentina" />
-                  </label>
-                  <label className="flex flex-col gap-2 text-sm font-semibold text-foreground" htmlFor="apellido">Apellido
-                    <input id="apellido" required value={studentInfo.apellido} onChange={(event) => setStudentInfo({ ...studentInfo, apellido: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none transition focus:border-primary focus:ring-4 focus:ring-ring/20" placeholder="Ej. García" />
-                  </label>
-                </div>
-                <label className="flex flex-col gap-2 text-sm font-semibold text-foreground" htmlFor="grado">Grado o año
-                  <select id="grado" required value={studentInfo.grado} onChange={(event) => setStudentInfo({ ...studentInfo, grado: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none transition focus:border-primary focus:ring-4 focus:ring-ring/20">
-                    <option value="">Selecciona tu grado</option>
-                    {gradeOptions.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
-                  </select>
-                </label>
-                <button type="submit" className="mt-2 flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/30">
-                  Comenzar el desafío <ArrowRight className="size-4" aria-hidden="true" />
-                </button>
-              </form>
-            </section>
-          )}
-
-          {step === "quiz" && (
-            <section className="rounded-3xl border border-border bg-card p-6 shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="question-title">
-              <div className="mb-7 flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Pregunta {currentQuestion + 1} de {questions.length}</p>
-                  <div className="mt-3 h-2 w-40 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }} /></div>
-                </div>
-                <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">{studentInfo.nombre} {studentInfo.apellido}</span>
-              </div>
-              <div className="mb-7 flex items-center gap-2 text-xs font-semibold text-primary"><span className="rounded-full bg-primary/10 px-3 py-1">{current.category}</span><span className="text-muted-foreground">+1 punto</span></div>
-              <h2 id="question-title" className="text-balance text-2xl font-bold leading-tight text-primary">{current.question}</h2>
-              <fieldset className="mt-7 flex flex-col gap-3">
-                <legend className="sr-only">Selecciona una respuesta</legend>
-                {current.options.map((option, index) => {
-                  const checked = selectedAnswer === index
-                  return <label key={option} className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${checked ? "border-primary bg-primary/5 ring-2 ring-primary/10" : "border-border hover:border-primary/40 hover:bg-muted/50"}`}>
-                    <input type="radio" name={`question-${current.id}`} value={index} checked={checked} onChange={() => setSelectedAnswer(index)} className="size-4 accent-primary" />
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-muted-foreground">{String.fromCharCode(65 + index)}</span>
-                    <span className="text-sm font-medium leading-6 text-foreground">{option}</span>
-                  </label>
-                })}
-              </fieldset>
-              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <button type="button" onClick={handlePrevious} disabled={currentQuestion === 0} className="flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-muted disabled:invisible"><ArrowLeft className="size-4" aria-hidden="true" /> Anterior</button>
-                <button type="button" onClick={handleNext} disabled={selectedAnswer === null} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40">{isLastQuestion ? "Finalizar y Enviar" : "Siguiente"}<ChevronRight className="size-4" aria-hidden="true" /></button>
-              </div>
-            </section>
-          )}
-
-          {step === "results" && (
-            <section className="rounded-3xl border border-border bg-card p-6 text-center shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="results-title">
-              <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-lg shadow-accent/20"><Trophy className="size-8" aria-hidden="true" /></div>
-              <p className="mt-6 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Misión completada</p>
-              <h2 id="results-title" className="mt-2 text-3xl font-bold text-primary">¡Buen trabajo, {studentInfo.nombre}!</h2>
-              <p className="mt-2 text-muted-foreground">Tu resultado está listo para ser enviado al equipo.</p>
-              <div className="mx-auto my-8 flex size-36 flex-col items-center justify-center rounded-full border-[10px] border-accent/30 bg-accent/10"><span className="text-4xl font-bold text-primary">{score}<span className="text-xl text-muted-foreground">/{questions.length}</span></span><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">puntos</span></div>
-              <div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground"><p className="font-semibold text-foreground">{percentage}% de respuestas correctas</p><p className="mt-1">Grado: {studentInfo.grado}</p></div>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={handleSubmitToSupabase} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"><Send className="size-4" aria-hidden="true" /> Enviar resultado</button><button type="button" onClick={restartQuiz} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-border px-5 text-sm font-semibold text-foreground transition hover:bg-muted"><RotateCcw className="size-4" aria-hidden="true" /> Reintentar</button></div>
-              <p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Check className="size-4 text-accent" aria-hidden="true" /> Cada respuesta correcta vale 1 punto.</p>
-            </section>
-          )}
-        </div>
-      </section>
-
-      <footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-border/70 px-5 py-5 text-xs text-muted-foreground lg:px-8"><span>Unidad Educativa Mariano Picón Salas</span><span className="font-mono">ROBOTICS / 2025—2026</span></footer>
-    </main>
-  )
+  return <main className="min-h-screen overflow-hidden bg-background text-foreground"><header className="border-b border-border/70 bg-card/80 backdrop-blur"><div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 lg:px-8"><div className="flex items-center gap-3"><div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"><Cpu className="size-6" aria-hidden="true" /></div><div><p className="font-mono text-xs font-semibold uppercase tracking-[0.24em] text-primary">RoboLab</p><p className="text-sm font-medium text-muted-foreground">Try-Out de Robótica</p></div></div><div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Sparkles className="size-4 text-accent" aria-hidden="true" />Aprende. Construye. Comparte.</div></div></header>
+    <section className="relative mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:px-8 lg:py-16"><div className="max-w-xl"><div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-foreground"><Lightbulb className="size-4 text-accent" aria-hidden="true" />Desafío STEM para estudiantes</div><h1 className="text-balance text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl">Tu próxima misión empieza aquí.</h1><p className="mt-5 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg">Demuestra tu curiosidad, tu lógica y tus ganas de crear. Completa este reto para formar parte del equipo de robótica.</p><div className="mt-8 flex flex-wrap gap-5 text-sm text-muted-foreground"><span className="flex items-center gap-2"><Cpu className="size-4 text-primary" aria-hidden="true" />6 preguntas</span><span className="flex items-center gap-2"><Users className="size-4 text-primary" aria-hidden="true" />Para estudiantes</span></div></div>
+      <div className="relative"><div className="absolute -inset-5 -z-10 rounded-[2rem] bg-accent/10 blur-2xl" />{step === "info" && <section className="rounded-3xl border border-border bg-card p-6 shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="student-info-title"><div className="mb-7 flex items-start justify-between gap-4"><div><p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Misión 01</p><h2 id="student-info-title" className="mt-2 text-2xl font-bold text-primary">Conozcamos al piloto</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">Completa tus datos para desbloquear el cuestionario.</p></div><div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-primary"><Users className="size-5" aria-hidden="true" /></div></div><form onSubmit={handleStudentInfoSubmit} className="flex flex-col gap-5"><div className="grid gap-5 sm:grid-cols-2"><label className="flex flex-col gap-2 text-sm font-semibold" htmlFor="nombre">Nombre<input id="nombre" required value={studentInfo.nombre} onChange={(event) => setStudentInfo({ ...studentInfo, nombre: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none focus:border-primary focus:ring-4 focus:ring-ring/20" placeholder="Ej. Valentina" /></label><label className="flex flex-col gap-2 text-sm font-semibold" htmlFor="apellido">Apellido<input id="apellido" required value={studentInfo.apellido} onChange={(event) => setStudentInfo({ ...studentInfo, apellido: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none focus:border-primary focus:ring-4 focus:ring-ring/20" placeholder="Ej. García" /></label></div><label className="flex flex-col gap-2 text-sm font-semibold" htmlFor="grado">Grado o año<select id="grado" required value={studentInfo.grado} onChange={(event) => setStudentInfo({ ...studentInfo, grado: event.target.value })} className="h-12 rounded-xl border border-input bg-background px-4 font-normal outline-none focus:border-primary focus:ring-4 focus:ring-ring/20"><option value="">Selecciona tu grado</option>{gradeOptions.map((grade) => <option key={grade} value={grade}>{grade}</option>)}</select></label><button type="submit" className="mt-2 flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary/90">Comenzar el desafío <ArrowRight className="size-4" aria-hidden="true" /></button></form></section>}
+      {step === "quiz" && <section className="rounded-3xl border border-border bg-card p-6 shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="question-title"><div className="mb-7 flex items-center justify-between gap-4"><div><p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Pregunta {currentQuestion + 1} de {questions.length}</p><div className="mt-3 h-2 w-40 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }} /></div></div><span className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">{studentInfo.nombre} {studentInfo.apellido}</span></div><div className="mb-7 flex items-center gap-2 text-xs font-semibold text-primary"><span className="rounded-full bg-primary/10 px-3 py-1">{current.category}</span><span className="text-muted-foreground">+1 punto</span></div><h2 id="question-title" className="text-balance text-2xl font-bold leading-tight text-primary">{current.question}</h2><fieldset className="mt-7 flex flex-col gap-3"><legend className="sr-only">Selecciona una respuesta</legend>{current.options.map((option, index) => { const checked = selectedAnswer === index; return <label key={option} className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${checked ? "border-primary bg-primary/5 ring-2 ring-primary/10" : "border-border hover:border-primary/40 hover:bg-muted/50"}`}><input type="radio" name={`question-${current.id}`} value={index} checked={checked} onChange={() => setSelectedAnswer(index)} className="size-4 accent-primary" /><span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-xs font-bold text-muted-foreground">{String.fromCharCode(65 + index)}</span><span className="text-sm font-medium leading-6">{option}</span></label> })}</fieldset><div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between"><button type="button" onClick={handlePrevious} disabled={currentQuestion === 0} className="flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground hover:bg-muted disabled:invisible"><ArrowLeft className="size-4" aria-hidden="true" />Anterior</button><button type="button" onClick={handleNext} disabled={selectedAnswer === null} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40">{isLastQuestion ? "Ver resultado" : "Siguiente"}<ChevronRight className="size-4" aria-hidden="true" /></button></div></section>}
+      {step === "results" && <section className="rounded-3xl border border-border bg-card p-6 text-center shadow-xl shadow-primary/5 sm:p-8" aria-labelledby="results-title"><div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><Trophy className="size-8" aria-hidden="true" /></div><p className="mt-6 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">Misión completada</p><h2 id="results-title" className="mt-2 text-3xl font-bold text-primary">¡Buen trabajo, {studentInfo.nombre}!</h2><p className="mt-2 text-muted-foreground">Tu resultado se guardará de forma segura.</p><div className="mx-auto my-8 flex size-36 flex-col items-center justify-center rounded-full border-[10px] border-accent/30 bg-accent/10"><span className="text-4xl font-bold text-primary">{score}<span className="text-xl text-muted-foreground">/{questions.length}</span></span><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">puntos</span></div><div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground"><p className="font-semibold">{percentage}% de respuestas correctas</p><p className="mt-1">Grado: {studentInfo.grado}</p></div>{saveError && <p className="mt-4 text-sm text-destructive">{saveError}</p>}{saved && <p className="mt-4 text-sm font-semibold text-primary">Resultado enviado correctamente.</p>}<div className="mt-6 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={handleSubmitToSupabase} disabled={saving || saved} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">{saving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Send className="size-4" aria-hidden="true" />}{saving ? "Guardando..." : saved ? "Resultado guardado" : "Enviar resultado"}</button><button type="button" onClick={restartQuiz} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-border px-5 text-sm font-semibold hover:bg-muted"><RotateCcw className="size-4" aria-hidden="true" />Reintentar</button></div><p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Check className="size-4 text-accent" aria-hidden="true" />Cada respuesta correcta vale 1 punto.</p></section>}</div></section><footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-border/70 px-5 py-5 text-xs text-muted-foreground lg:px-8"><span>Unidad Educativa Mariano Picón Salas</span><a className="font-mono hover:text-primary" href="/admin/login">ADMIN</a></footer></main>
 }
