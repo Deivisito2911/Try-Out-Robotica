@@ -7,8 +7,8 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Try Out de Robótica - Unidad Educativa Mariano Picon Salas",
-  description: "Cuestionario de selección para el equipo de robótica",
+  title: "RoboLab | Try-Out de Robótica",
+  description: "Aplicación de quiz STEM para estudiantes que quieren formar parte del equipo de robótica.",
   generator: "v0.app",
 }
 
